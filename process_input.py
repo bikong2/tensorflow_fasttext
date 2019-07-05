@@ -136,6 +136,7 @@ def main(_):
         inputfile = FLAGS.text_input
         examples = ParseTextInput(FLAGS.text_input, FLAGS.labels, ngrams)
     outputfile = os.path.join(FLAGS.output_dir, inputfile + ".tfrecords")
+    print(outputfile)
     WriteExamples(examples, outputfile, FLAGS.num_shards)
     vocabfile = os.path.join(FLAGS.output_dir, inputfile + ".vocab")
     labelfile = os.path.join(FLAGS.output_dir, inputfile + ".labels")

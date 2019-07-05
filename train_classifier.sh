@@ -10,10 +10,10 @@ DATADIR=$1
 DATASET=${2:-ag_news}
 OUTPUT=$DATADIR/models/${DATASET}
 EXPORT_DIR=$DATADIR/models/${DATASET}
-INPUT_TRAIN_FILE=$DATADIR/${DATASET}.train
-INPUT_TEST_FILE=$DATADIR/${DATASET}.test
-TRAIN_FILE="$DATADIR/${DATASET}.train.tfrecords-*"
-TEST_FILE="$DATADIR/${DATASET}.test.tfrecords-*"
+INPUT_TRAIN_FILE=$DATADIR/corpus/domain_id_61.fasttext.train.tsv
+INPUT_TEST_FILE=$DATADIR/corpus/domain_id_61.fasttext.test.tsv
+TRAIN_FILE="$DATADIR/corpus/domain_id_61.fasttext.train.tsv.tfrecords-*"
+TEST_FILE="$DATADIR/corpus/domain_id_61.fasttext.test.tsv.tfrecords-*"
 
 echo "Looking for $TRAIN_FILE"
 if ls ${TRAIN_FILE} 1> /dev/null 2>&1
@@ -22,7 +22,7 @@ then
 else
     echo "Not Found $TRAIN_FILE"
     echo "Processing training dataset file"
-    python process_input.py --facebook_input=${INPUT_TRAIN_FILE} --ngrams=2,3,4
+    python process_input.py --facebook_input=${INPUT_TRAIN_FILE} --ngrams=2,3
     if ls ${TRAIN_FILE} 1> /dev/null 2>&1
     then
         echo "$TRAIN_FILE created"
@@ -39,7 +39,7 @@ then
 else
     echo "Not Found $TEST_FILE"
     echo "Processing test dataset file"
-    python process_input.py --facebook_input=${INPUT_TEST_FILE} --ngrams=2,3,4
+    python process_input.py --facebook_input=${INPUT_TEST_FILE} --ngrams=2,3
     if ls ${TEST_FILE} 1> /dev/null 2>&1
     then
         echo "$TEST_FILE created"
@@ -49,37 +49,15 @@ else
     fi
 fi
 
-LABELS=$DATADIR/${DATASET}.train.labels
-VOCAB=$DATADIR/${DATASET}.train.vocab
+LABELS=$DATADIR/corpus/domain_id_61.fasttext.train.tsv.labels
+VOCAB=$DATADIR/corpus/domain_id_61.fasttext.train.tsv.vocab
 VOCAB_SIZE=`cat $VOCAB | wc -l | sed -e "s/[ \t]//g"`
 
 echo $VOCAB
 echo $VOCAB_SIZE
 
 # Uncomment if you don't have horovod installed.
-# python classifier.py \
-#     --train_records=$TRAIN_FILE \
-#     --eval_records=$TEST_FILE \
-#     --label_file=$LABELS \
-#     --vocab_file=$VOCAB \
-#     --vocab_size=$VOCAB_SIZE \
-#     --num_oov_vocab_buckets=100 \
-#     --model_dir=$OUTPUT \
-#     --export_dir=$EXPORT_DIR \
-#     --embedding_dimension=10 \
-#     --num_ngram_buckets=100000 \
-#     --ngram_embedding_dimension=10 \
-#     --learning_rate=0.01 \
-#     --batch_size=32 \
-#     --train_steps=5000 \
-#     --eval_steps=100 \
-#     --num_epochs=1 \
-#     --num_threads=1 \
-#     --nouse_ngrams \
-#     --nolog_device_placement \
-#     --debug
-
-mpirun -np 2 python classifier.py \
+python classifier.py \
     --train_records=$TRAIN_FILE \
     --eval_records=$TEST_FILE \
     --label_file=$LABELS \
@@ -88,16 +66,38 @@ mpirun -np 2 python classifier.py \
     --num_oov_vocab_buckets=100 \
     --model_dir=$OUTPUT \
     --export_dir=$EXPORT_DIR \
-    --embedding_dimension=10 \
+    --embedding_dimension=50 \
     --num_ngram_buckets=100000 \
-    --ngram_embedding_dimension=10 \
-    --learning_rate=0.01 \
-    --batch_size=32 \
+    --ngram_embedding_dimension=50 \
+    --learning_rate=0.001 \
+    --batch_size=64 \
     --train_steps=5000 \
-    --eval_steps=100 \
-    --num_epochs=1 \
+    --eval_steps=1000 \
+    --num_epochs=50 \
     --num_threads=1 \
     --nouse_ngrams \
     --nolog_device_placement \
-    --horovod \
     --debug
+
+#mpirun -np 2 python classifier.py \
+#    --train_records=$TRAIN_FILE \
+#    --eval_records=$TEST_FILE \
+#    --label_file=$LABELS \
+#    --vocab_file=$VOCAB \
+#    --vocab_size=$VOCAB_SIZE \
+#    --num_oov_vocab_buckets=100 \
+#    --model_dir=$OUTPUT \
+#    --export_dir=$EXPORT_DIR \
+#    --embedding_dimension=10 \
+#    --num_ngram_buckets=100000 \
+#    --ngram_embedding_dimension=10 \
+#    --learning_rate=0.01 \
+#    --batch_size=32 \
+#    --train_steps=5000 \
+#    --eval_steps=100 \
+#    --num_epochs=1 \
+#    --num_threads=1 \
+#    --nouse_ngrams \
+#    --nolog_device_placement \
+#    --horovod \
+#    --debug

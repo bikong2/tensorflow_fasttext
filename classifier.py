@@ -65,7 +65,7 @@ FLAGS = tf.flags.FLAGS
 if FLAGS.horovod:
     try:
         import horovod.tensorflow as hvd
-    except ImportError, e:
+    except e:
         print(e)
         print("Make sure Horovod is installed: https://github.com/uber/horovod")
         sys.exit(1)
@@ -96,11 +96,9 @@ def FastTextEstimator(model_dir, config=None):
         "learning_rate": FLAGS.learning_rate,
     }
     def model_fn(features, labels, mode, params):
-        features["text"] = tf.sparse_tensor_to_dense(features["text"],
-                                                     default_value=" ")
+        features["text"] = tf.sparse.to_dense(features["text"], default_value=" ")
         if FLAGS.use_ngrams:
-            features["ngrams"] = tf.sparse_tensor_to_dense(features["ngrams"],
-                                                           default_value=" ")
+            features["ngrams"] = tf.sparse.to_dense(features["ngrams"], default_value=" ")
         text_lookup_table = tf.contrib.lookup.index_table_from_file(
             FLAGS.vocab_file, FLAGS.num_oov_vocab_buckets, FLAGS.vocab_size)
         text_ids = text_lookup_table.lookup(features["text"])

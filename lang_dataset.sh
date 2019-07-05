@@ -2,7 +2,7 @@
 
 if [[ $# -ne 1 ]]
 then
-    DATADIR="/tmp/lang_detect"
+    DATADIR="/home/lixihua/datas/lang_detect"
 fi
 
 if [[ ! -d $DATADIR ]]
