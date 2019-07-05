@@ -1,8 +1,15 @@
+# -*- coding: utf-8 -*-
+# @author: lixihua9@126.com
+
 """Process input data into tensorflow examples, to ease training.
 
 Input data is in one of two formats:
 - facebook's format used in their fastText library.
 - two text files, one with input text per line, the other a label per line.
+
+facebook's format:
+__label__1    我 想 听 周杰伦 的 歌
+__label__0    今天 天气 如何
 """
 from __future__ import absolute_import
 from __future__ import division
@@ -26,7 +33,7 @@ tf.flags.DEFINE_string("text_input", None,
                        Used instead of --facebook_input""")
 tf.flags.DEFINE_string("labels", None,
                        """Input text file containing one label for
-                       classification  per line.
+                       classification per line.
                        Must have --text_input defined.
                        Used instead of --facebook_input""")
 tf.flags.DEFINE_string("ngrams", None,
@@ -117,8 +124,7 @@ def WriteVocab(examples, vocabfile, labelfile):
 def main(_):
     # Check flags
     if not (FLAGS.facebook_input or (FLAGS.text_input and FLAGS.labels)):
-        print >>sys.stderr, \
-            "Error: You must define either facebook_input or both text_input and labels"
+        print >> sys.stderr, "Error: You must define either facebook_input or both text_input and labels"
         sys.exit(1)
     ngrams = None
     if FLAGS.ngrams:

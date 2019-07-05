@@ -1,5 +1,7 @@
-"""Input feature columns and input_fn for models.
+# -*- coding: utf-8 -*-
+# @author: lixihua9@126.com
 
+"""Input feature columns and input_fn for models.
 Handles both training, evaluation and inference.
 """
 import tensorflow as tf
@@ -23,7 +25,8 @@ def ParseSpec(use_ngrams, include_target):
     if use_ngrams:
         parse_spec["ngrams"] = tf.VarLenFeature(dtype=tf.string)
     if include_target:
-        parse_spec["label"] = tf.FixedLenFeature(shape=(), dtype=tf.string,
+        parse_spec["label"] = tf.FixedLenFeature(shape=(), 
+                                                 dtype=tf.string,
                                                  default_value=None)
     return parse_spec
 
@@ -45,13 +48,17 @@ def InputFn(mode,
     if num_epochs <= 0:
         num_epochs=None
     def input_fn():
-        include_target =  mode != tf.estimator.ModeKeys.PREDICT
+        include_target = mode != tf.estimator.ModeKeys.PREDICT
         parse_spec = ParseSpec(use_ngrams, include_target)
         print("ParseSpec", parse_spec)
         print("Input file:", input_file)
         features = tf.contrib.learn.read_batch_features(
-            input_file, batch_size, parse_spec, tf.TFRecordReader,
-            num_epochs=num_epochs, reader_num_threads=num_threads)
+            input_file, 
+            batch_size, 
+            parse_spec, 
+            tf.TFRecordReader,
+            num_epochs=num_epochs, 
+            reader_num_threads=num_threads)
         label = None
         if include_target:
             label = features.pop("label")

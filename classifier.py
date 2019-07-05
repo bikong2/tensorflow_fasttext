@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+# @author: lixihua9@126.com
+
 """Train simple fastText-style classifier.
 
 Inputs:
@@ -107,6 +110,7 @@ def FastTextEstimator(model_dir, config=None):
         text_embedding = tf.reduce_mean(tf.nn.embedding_lookup(
             text_embedding_w, text_ids), axis=-2)
         input_layer = text_embedding
+
         if FLAGS.use_ngrams:
             ngram_hash = tf.string_to_hash_bucket(features["ngrams"],
                                                   FLAGS.num_ngram_buckets)
@@ -116,17 +120,21 @@ def FastTextEstimator(model_dir, config=None):
                 ngram_embedding_w, ngram_hash), axis=-2)
             ngram_embedding = tf.expand_dims(ngram_embedding, -2)
             input_layer = tf.concat([text_embedding, ngram_embedding], -1)
+
         num_classes = FLAGS.num_labels
         logits = tf.contrib.layers.fully_connected(
-            inputs=input_layer, num_outputs=num_classes,
+            inputs=input_layer, 
+            num_outputs=num_classes,
             activation_fn=None)
+
         predictions = tf.argmax(logits, axis=-1)
         probs = tf.nn.softmax(logits)
         loss, train_op = None, None
         metrics = {}
         if mode != tf.estimator.ModeKeys.PREDICT:
             label_lookup_table = tf.contrib.lookup.index_table_from_file(
-                FLAGS.label_file, vocab_size=FLAGS.num_labels)
+                FLAGS.label_file, 
+                vocab_size=FLAGS.num_labels)
             labels = label_lookup_table.lookup(labels)
             loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(
                 labels=labels, logits=logits))
@@ -141,24 +149,33 @@ def FastTextEstimator(model_dir, config=None):
         if FLAGS.export_dir:
             exports = Exports(probs, text_embedding)
         return tf.estimator.EstimatorSpec(
-            mode, predictions=predictions, loss=loss, train_op=train_op,
-            eval_metric_ops=metrics, export_outputs=exports)
+            mode, 
+            predictions=predictions, 
+            loss=loss, 
+            train_op=train_op,
+            eval_metric_ops=metrics, 
+            export_outputs=exports)
+    
+
     session_config = tf.ConfigProto(
         log_device_placement=FLAGS.log_device_placement)
     if FLAGS.horovod:
         session_config.gpu_options.visible_device_list = str(hvd.local_rank())
+    
     config = tf.contrib.learn.RunConfig(
         save_checkpoints_secs=None,
         save_checkpoints_steps=FLAGS.checkpoint_steps,
         session_config=session_config)
-    return tf.estimator.Estimator(model_fn=model_fn, model_dir=model_dir,
-                                  params=params, config=config)
+    return tf.estimator.Estimator(model_fn=model_fn, 
+                                  model_dir=model_dir,
+                                  params=params, 
+                                  config=config)
 
 
 def FastTrain():
     print("FastTrain", FLAGS.train_steps)
     estimator = FastTextEstimator(FLAGS.model_dir)
-    print("TEST" + FLAGS.train_records)
+    print("TRAIN" + FLAGS.train_records)
     train_input = InputFn(tf.estimator.ModeKeys.TRAIN, FLAGS.train_records)
     print("STARTING TRAIN")
     hooks = None
@@ -169,7 +186,6 @@ def FastTrain():
     if not FLAGS.horovod or hvd.rank() == 0:
         print("EVALUATE")
         eval_input = InputFn(tf.estimator.ModeKeys.EVAL, FLAGS.eval_records)
-        #eval_metrics = { "accuracy": tf.metrics.accuracy(labels, predictions) }
         result = estimator.evaluate(input_fn=eval_input, steps=FLAGS.eval_steps, hooks=None)
         print(result)
         print("DONE")
@@ -188,8 +204,8 @@ def main(_):
         nproc = hvd.size()
         total = FLAGS.train_steps
         FLAGS.train_steps = total / nproc
-        print("Running %d steps on each of %d processes for %d total" % (
-            FLAGS.train_steps, nproc, total))
+        print("Running %d steps on each of %d processes for %d total" % (FLAGS.train_steps, nproc, total))
+    
     FastTrain()
 
 

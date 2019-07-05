@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+# @author: lixihua9@126.com
+
 import sys
 import tensorflow as tf
 from google.protobuf import text_format
@@ -32,7 +35,8 @@ def test_parse_spec():
 def test_reading_inputs():
     parse_spec = {
         "text": tf.VarLenFeature(tf.string),
-        "label": tf.FixedLenFeature(shape=(1,), dtype=tf.int64,
+        "label": tf.FixedLenFeature(shape=(1,), 
+                                    dtype=tf.int64,
                                     default_value=None)
     }
     sess = tf.Session()

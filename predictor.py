@@ -1,5 +1,7 @@
-"""Predict classification on provided text.
+# -*- coding: utf-8 -*-
+# @author: lixihua9@126.com
 
+"""Predict classification on provided text.
 Uses a SavedModel produced by classifier.py
 """
 from __future__ import absolute_import
@@ -34,7 +36,8 @@ def RunModel(saved_model_dir, signature_def_key, tag, text, ngrams_list=None):
     if meta_graph_def is None:
         raise ValueError("Cannot find saved_model with tag" + tag)
     signature_def = signature_def_utils.get_signature_def_by_key(
-        meta_graph, signature_def_key)
+        meta_graph, 
+        signature_def_key)
     text = text_utils.TokenizeText(text)
     ngrams = None
     if ngrams_list is not None:
@@ -62,8 +65,11 @@ def RunModel(saved_model_dir, signature_def_key, tag, text, ngrams_list=None):
 def main(_):
     if not FLAGS.text:
         raise ValueError("No --text provided")
-    outputs = RunModel(FLAGS.saved_model, FLAGS.signature_def, FLAGS.tag,
-                       FLAGS.text, FLAGS.ngrams)
+    outputs = RunModel(FLAGS.saved_model, 
+                       FLAGS.signature_def, 
+                       FLAGS.tag,
+                       FLAGS.text, 
+                       FLAGS.ngrams)
     if FLAGS.signature_def == "proba":
         print("Proba:", outputs)
         print("Class(1-N):", np.argmax(outputs) + 1)

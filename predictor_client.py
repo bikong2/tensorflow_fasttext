@@ -1,14 +1,13 @@
+# -*- coding: utf-8 -*-
+# @author: lixihua9@126.com
+
 """Predict classification on provided text.
-
 Send request to a tensorflow_model_server.
-
    tensorflow_model_server --port=9000 --model_base_path=$export_dir_base
-
 Usage:
-   
    predictor_client.py --text='some text' --ngrams=1,2,4
-
 """
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
